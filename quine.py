@@ -122,3 +122,80 @@ def to_rpn(expression):
         queue.append(stack.pop())
 
     return queue
+
+
+
+# Evaluates expression's value
+def evaluate(rpn_expression, values):
+
+    stack = []
+
+    for token in rpn_expression:
+
+        if token == '=':
+            stack = stack[:-2] + [ stack[-2] == stack[-1] ]
+
+        elif token == '>':
+            stack = stack[:-2] + [ (not stack[-2]) or stack[-1] ]
+
+        elif token == '&':
+            stack = stack[:-2] + [ stack[-2] and stack[-1] ]
+
+        elif token == '|':
+            stack = stack[:-2] + [ stack[-2] or stack[-1] ]
+
+        elif token == '^':
+            stack = stack[:-2] + [ stack[-2] != stack[-1] ]
+
+        elif token == '~':
+            stack = stack[:-1] + [ not stack[-1] ]
+
+        else:
+            stack += [ values[token] ]
+
+
+    return stack[0]
+
+
+
+# Creates bitmask of a number
+def get_bitmask(number, width):
+    return bin(number)[2:].rjust(width, '0')
+
+
+
+# Generates values dictionary for given variables set
+def get_values(bitmask_number, variables):
+
+    result = {}
+    values = map(lambda x : x == '1', get_bitmask(bitmask_number, len(variables)))
+
+    for variable, value in zip(variables, values):
+        result[variable] = value
+
+    return result
+
+
+
+# Counts the number of '1' digits in binary representation of the number
+def get_ones_number(bitmask_number):
+    return bin(bitmask_number).count('1')
+
+
+
+# Finds all value sets for wchich the expression evaluetes to True
+def find_all_minterms(rpn_expression):
+
+    variables = set([token for token in rpn_expression if token not in '&|^>=~'])
+    upper_bound = 1 << len(variables)
+
+    minterms = defaultdict(lambda: [])
+
+    for bitmask_number in range(upper_bound):
+
+        values = get_values(bitmask_number, variables)
+
+        if evaluate(rpn_expression, values) == True:
+            minterms[get_ones_number(bitmask_number)] += [values]
+
+    return minterms
