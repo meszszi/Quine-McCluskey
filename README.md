@@ -1,3 +1,3 @@
-# Simplification of boolean expressions with Quine–McCluskey algorithm
+# Implementation of Quine–McCluskey algorithm
 
-Short project for Python course at AGH.
+Simplifying boolean expressions - short project for Python course at AGH.
