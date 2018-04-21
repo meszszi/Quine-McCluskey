@@ -68,11 +68,17 @@ def to_rpn(expression):
     variable_characters = string.ascii_letters + string.digits
     operator_characters = '&|^>=~()'
 
+    invalid_characters = [char for char in expression
+                          if char not in (variable_characters + operator_characters + string.whitespace)]
+
+    if len(invalid_characters) != 0:
+        return 'Invalid characters: ' + ', '.join(invalid_characters)
+
     # Splits expression into list of single entries (variables or operators)
     tokens = re.findall('[' + variable_characters + ']+|[' + operator_characters + ']', expression)
 
     if not check_syntax(tokens):
-        return 'nie jest dobrze :C'
+        return 'Invalid expression syntax'
 
     # All considered operators except for '~' are left-to-right associative
     associativity = defaultdict(lambda: 'left')
@@ -318,6 +324,16 @@ def simplify(expression):
 
     rpn_expression = to_rpn(expression)
     minterms, variables = get_minterms(rpn_expression)
+
+    if len(variables) == 0:
+        return '1' if evaluate(rpn_expression, {}) else '0'
+
+    if len(minterms) == 0:
+        return '0'
+
+    if len(minterms) == 1 << len(variables):
+        return '1'
+
     prime_implicants = get_prime_implicants(minterms)
     minterms_cover = get_minterms_cover(minterms, prime_implicants)
     return implicants_set_to_string(minterms_cover, variables)
