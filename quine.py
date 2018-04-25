@@ -5,6 +5,24 @@ from itertools import combinations
 
 
 
+# Raised when expression's syntax is incorrect
+class InvalidSyntaxException(Exception):
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
+
+# Raised when unexpected characters are encountered inside the expression
+class InvalidCharactersException(Exception):
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
+
+
+
 # Checks if given list of tokens represents syntactically correct logical expression
 def check_syntax(expression_tokens):
 
@@ -68,17 +86,17 @@ def to_rpn(expression):
     variable_characters = string.ascii_letters + string.digits
     operator_characters = '&|^>=~()'
 
-    invalid_characters = [char for char in expression
-                          if char not in (variable_characters + operator_characters + string.whitespace)]
+    invalid_characters = set([char for char in expression
+                          if char not in (variable_characters + operator_characters + string.whitespace)])
 
     if len(invalid_characters) != 0:
-        return 'Invalid characters: ' + ', '.join(invalid_characters)
+        raise InvalidCharactersException('Invalid characters: ' + ', '.join(invalid_characters))
 
     # Splits expression into list of single entries (variables or operators)
     tokens = re.findall('[' + variable_characters + ']+|[' + operator_characters + ']', expression)
 
     if not check_syntax(tokens):
-        return 'Invalid expression syntax'
+        raise InvalidSyntaxException("Invalid expression's syntax")
 
     # All considered operators except for '~' are left-to-right associative
     associativity = defaultdict(lambda: 'left')
@@ -167,7 +185,6 @@ def evaluate(rpn_expression, values):
 
         else:
             stack += [ values[token] ]
-
 
     return stack[0]
 
